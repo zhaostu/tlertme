@@ -3,8 +3,9 @@ require([
         "order!jquery.transloc",
         "order!jquery.ba-bbq.min",
         "order!bootstrap",
-        "render"
-], function($, _, _, _, render){
+        "render",
+        "update",
+], function($, _, _, _, render, update){
     var params = $.deparam.querystring();
 
     var add_querystring = function(query){
@@ -21,6 +22,22 @@ require([
         });
         return result;
     };
+
+    var format_timediff = function(date, now){
+        date = Date.parse(date);
+        if(date){
+            var td = (date - now) / 1000;
+            console.log(td);
+            console.log(date);
+            console.log(now);
+            var t = Math.floor(td / 60);
+            t = t <= 1 ? '<1' : t;
+            return t + ' min';
+        }
+        else{
+            return '--'
+        }
+    }
 
     if(!params['agency_id']){
         // Show select agency screen.
@@ -79,7 +96,7 @@ require([
                 var routes = [];
                 $.each(stops, function(i, stop){
                     if(stop['stop_id'] == from_stop_id){
-                        routes = routes.concat(stop['routes']);                        
+                        routes = routes.concat(stop['routes']);
                     }
                 });
 
@@ -107,19 +124,78 @@ require([
         var from_stop_id = params['from_stop'];
         var to_stop_id = params['to_stop'];
 
-        // Find out common route_ids.
-        $.transloc('stops', function(stops){
-            var from_routes = [];
-            var to_routes = [];
-            $.each(stops, function(i, stop){
-                if(stop['stop_id'] == from_stop_id){
-                    from_routes = stop['routes'];
-                }
-                if(stop['stop_id'] == to_stop_id){
-                    to_routes = stop['routes'];
-                }
-            });
-            var common_routes = array_intersection(from_routes, to_routes);
+        $.transloc('stops', {
+            agencyIds: [agency_id],
+            success: function(stops){
+                // Find out common route_ids.
+                var from_routes = [];
+                var to_routes = [];
+                $.each(stops, function(i, stop){
+                    if(stop['stop_id'] == from_stop_id){
+                        from_routes = stop['routes'];
+                    }
+                    if(stop['stop_id'] == to_stop_id){
+                        to_routes = stop['routes'];
+                    }
+                });
+                var common_routes = array_intersection(from_routes, to_routes);
+
+                // Get route colors and other information.
+                $.transloc('routes', {
+                    agencyIds: [agency_id],
+                    success: function(routes){
+                        var route_infos = {};
+                        $.each(routes[agency_id], function(i, route){
+                            route_infos[route['route_id']] = route;
+                        });
+                        // Updater, called back by get_update.
+                        var update_info = function(arrivals){
+                            var arrival_entries = [];
+                            var now = new Date();
+                            $.each(arrivals, function(vehicle_id, vehicle){
+                                // Sort arrival times.
+                                vehicle.sort(function(a1, a2){
+                                    return a1['arrival_at'] >= a2['arrival_at'] ? 1 : -1;
+                                });
+
+                                // Generate all arrival entries.
+                                while(vehicle.length){
+                                    if(vehicle[0]['is_from'] && (vehicle.length == 1 || vehicle[1]['is_to'])){
+                                        // from_stop -> to_stop or from_stop -> null.
+                                        var route = route_infos[vehicle[0]['route_id']];
+                                        var arrival = {
+                                            route_short_name: route['short_name'],
+                                            route_long_name: route['long_name'],
+                                            route_color: route['color'],
+                                            route_text_color: route['text_color'],
+                                            vehicle_id: vehicle_id,
+                                            from_stamp: vehicle[0]['arrival_at'],
+                                            to_stamp: vehicle.length > 1 ? vehicle[1]['arrival_at'] : null,
+                                            from_arrival: format_timediff(vehicle[0]['arrival_at'], now),
+                                            to_arrival: format_timediff(vehicle.length > 1 ? vehicle[1]['arrival_at'] : null, now),
+                                        }
+                                        arrival_entries.push(arrival);
+                                    }
+                                    vehicle.shift();
+                                }
+                            });
+                            
+                            arrival_entries.sort(function(a1, a2){
+                                return a1['from_stamp'] >= a2['from_stamp'] ? 1 : -1;
+                            });
+
+                            $.each(arrival_entries, function(i, arrival){
+                                $('#main-list').append(render.arrival(arrival));
+                            });
+                        };
+
+                        var get_update = update($, [agency_id], common_routes, [from_stop_id, to_stop_id], update_info);
+
+                        setInterval(get_update, 30000);
+                        get_update();
+                    }
+                });
+            }
         });
     }
 });
