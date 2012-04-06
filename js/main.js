@@ -27,20 +27,19 @@ require([
         date = Date.parse(date);
         if(date){
             var td = (date - now) / 1000;
-            console.log(td);
-            console.log(date);
-            console.log(now);
             var t = Math.floor(td / 60);
             t = t <= 1 ? '<1' : t;
             return t + ' min';
         }
         else{
-            return '--'
+            return '>45 min'
         }
     }
 
     if(!params['agency_id']){
         // Show select agency screen.
+        $("#title").append("Choose Agency");
+
         $.transloc('agencies', {
             success: function(agencies){
                 agencies.sort(function(a1, a2){
@@ -54,11 +53,14 @@ require([
                     add_querystring({"agency_id": agency_id});
                     return false;
                 });
+                $("#waiting").hide();
             }
         });
     }
     else if(!params['from_stop']){
         // Show select from stop screen.
+        $("#title").append("Choose A From Stop");
+
         var agency_id = params['agency_id'];
         $.transloc('stops', {
             agencyIds: [agency_id],
@@ -77,11 +79,14 @@ require([
                     add_querystring({"from_stop": stop_id});
                     return false;
                 });
+                $("#waiting").hide();
             }
         });
     }
     else if(!params['to_stop']){
         // Show select to stop screen.
+        $("#title").append("Choose A To Stop");
+
         var agency_id = params['agency_id'];
         var from_stop_id = params['from_stop'];
         $.transloc('stops', {
@@ -99,7 +104,6 @@ require([
                         routes = routes.concat(stop['routes']);
                     }
                 });
-
                 // Find out stops that are available for the routes.
                 $.each(stops, function(i, stop){
                     if(stop['stop_id'] == from_stop_id){
@@ -116,10 +120,14 @@ require([
                     add_querystring({"to_stop": stop_id});
                     return false;
                 });
+                $("#waiting").hide();
             }
         });
     }
     else{
+        // Show the actual alarm screen.
+        $("#title").append("The Buses You Can Take Are");
+
         var agency_id = params['agency_id'];
         var from_stop_id = params['from_stop'];
         var to_stop_id = params['to_stop'];
@@ -146,6 +154,9 @@ require([
                     success: function(routes){
                         var route_infos = {};
                         $.each(routes[agency_id], function(i, route){
+                            if(route['short_name'] == ''){
+                                route['short_name'] = null;
+                            }
                             route_infos[route['route_id']] = route;
                         });
                         // Updater, called back by get_update.
@@ -184,9 +195,11 @@ require([
                                 return a1['from_stamp'] >= a2['from_stamp'] ? 1 : -1;
                             });
 
+                            $('#main-container').empty();
                             $.each(arrival_entries, function(i, arrival){
-                                $('#main-list').append(render.arrival(arrival));
+                                $('#main-container').append(render.arrival(arrival));
                             });
+                            $("#waiting").hide();
                         };
 
                         var get_update = update($, [agency_id], common_routes, [from_stop_id, to_stop_id], update_info);

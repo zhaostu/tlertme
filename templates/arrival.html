@@ -1,20 +1,18 @@
-<div class="row container-fluid">
-    <div class="span12 block arrival" style="">
-      <div class="span10">
-        <div class="row-fluid block" style="color:#{{route_text_color}};background-color:#{{route_color}};">
-          <h1>{{route_short_name}}</h1>
-        </div>
-        <div class="row-fluid">
-          <h2>{{route_long_name}}</h2>
-        </div>
+<hr>
+<div class="row">
+  <div class="span12">
+    <div class="arrival">
+      <div class="route-info">
+        <h1 class="route-id" style="color:#{{route_text_color}};background-color:#{{route_color}};">
+        {{#route_short_name}}{{route_short_name}}{{/route_short_name}}
+        {{^route_short_name}}Rt{{/route_short_name}}
+        </h1>
+        <h2>{{route_long_name}}</h2>
       </div>
-      <div class="span2">
-        <div class="row-fluid">
-          Pickup: {{from_arrival}}
-        </div>
-        <div class="row-fluid">
-          Arrival: {{to_arrival}}
-        </div>
-      </div>
+      <p>
+        Pickup: {{from_arrival}}<br/>
+        Arrival: {{to_arrival}}
+      </p>
     </div>
-<div>
+  </div>
+</div>

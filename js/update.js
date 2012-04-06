@@ -11,6 +11,10 @@ define([], function() {
                     var vehicles = {};
                     for(var i = 0; i < 2; i++){
                         var stop = arrivals[i];
+                        if(!stop){
+                            // If currently no arrival prediction for this stop.
+                            continue;
+                        }
                         for (var j = 0; j < stop['arrivals'].length; j++){
                             var arrival = stop['arrivals'][j];
                             arrival['is_from'] = (stop['stop_id'] == stop_ids[0]);

@@ -1,4 +1,7 @@
-.block {
+.agency {
+    background-color:#EEEEEE;
+    margin:5px 0;
+    padding:5px;
     border-width:1px;
     border-style:solid;
     border-color:#BBBBBB;
@@ -6,27 +9,44 @@
     text-align:center;
 }
 
-.block a{
-    display:block;
-}
-
-.agency {
-    background-color:#EEEEEE;
-    margin:10px;
-    padding:10px;
-}
-
 .stop {
-    height:50px;
-    margin:5px;
-    padding:5px;
+    height:4em;
+    margin:15px 0;
+    padding:3px;
+    border-width:1px;
+    border-style:solid;
+    border-color:#BBBBBB;
+    border-radius:4px;
+    text-align:center;
 }
 
 .stop h6{
-    height:35px;
+    height:3em;
 }
 
 .stop p{
     text-align:right;
     color: #999999;
+}
+
+.arrival p{
+    text-align:right;
+    float:right;
+    clear:right;
+}
+
+.route-info {
+    float: left;
+}
+
+.route-id {
+    border-radius:5px;
+    border-color: #888888;
+    display: inline-block;
+    padding: 0 20px;
+    margin: 1px;
+}
+
+#waiting h1{
+    font-size: 5em;
 }
