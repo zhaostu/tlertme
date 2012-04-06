@@ -10,7 +10,7 @@
 }
 
 .stop {
-    height:4em;
+    height:4.5em;
     margin:15px 0;
     padding:3px;
     border-width:1px;
@@ -20,13 +20,13 @@
     text-align:center;
 }
 
-.stop h6{
+.stop h4{
     height:3em;
 }
 
 .stop p{
     text-align:right;
-    color: #999999;
+    color:#999999;
 }
 
 .arrival p{
@@ -36,17 +36,25 @@
 }
 
 .route-info {
-    float: left;
+    float:left;
 }
 
 .route-id {
     border-radius:5px;
-    border-color: #888888;
-    display: inline-block;
-    padding: 0 20px;
-    margin: 1px;
+    border-color:#888888;
+    display:inline-block;
+    padding:0 20px;
+    margin:1px;
+}
+
+.arrival-time {
+    font-size:2em;
 }
 
 #waiting h1{
-    font-size: 5em;
+    font-size:5em;
+}
+
+#input-bar {
+    float:right;
 }

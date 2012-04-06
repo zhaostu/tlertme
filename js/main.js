@@ -126,7 +126,8 @@ require([
     }
     else{
         // Show the actual alarm screen.
-        $("#title").append("The Buses You Can Take Are");
+        $("#title").append("You Can Take");
+        $("#input-bar").append('Alert me when a bus is <input type="number" class="span1" min="1" max="20" value="5"/> mins away.')
 
         var agency_id = params['agency_id'];
         var from_stop_id = params['from_stop'];
