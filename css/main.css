@@ -35,6 +35,10 @@
     clear:right;
 }
 
+.arrival-alarm .arrival-time{
+    color: #ff0000;
+}
+
 .route-info {
     float:left;
 }

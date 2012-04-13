@@ -23,13 +23,21 @@ require([
         return result;
     };
 
-    var format_timediff = function(date, now){
+    var timediff = function(date, now){
         date = Date.parse(date);
         if(date){
             var td = (date - now) / 1000;
-            var t = Math.floor(td / 60);
-            t = t <= 1 ? '<1' : t;
-            return t + ' min';
+            return Math.floor(td / 60);
+        }
+        else{
+            return null;
+        }
+    };
+
+    var format_timediff = function(diff){
+        if(diff){
+            diff = diff <= 1 ? '<1' : diff;
+            return diff + ' min';
         }
         else{
             return '>45 min'
@@ -127,11 +135,19 @@ require([
     else{
         // Show the actual alarm screen.
         $("#title").append("You Can Take");
-        $("#input-bar").append('Alert me when a bus is <input type="number" class="span1" min="1" max="20" value="5"/> mins away.')
+        $("#input-bar").append('Alert me when a bus is <input type="number" id="minutes" class="span1" min="1" max="20" value="5"/> mins away.')
 
         var agency_id = params['agency_id'];
         var from_stop_id = params['from_stop'];
         var to_stop_id = params['to_stop'];
+
+        var audio_tester = new Audio();
+        if(!!audio_tester.canPlayType && "" != audio_tester.canPlayType('audio/ogg; codecs="vorbis"')){
+            var alarm = new Audio("sound/alarm.ogg");
+        }
+        else if(!!audio_tester.canPlayType && "" != audio_tester.canPlayType('audio/mpeg')){
+            var alarm = new Audio("sound/alarm.mp3");
+        }
 
         $.transloc('stops', {
             agencyIds: [agency_id],
@@ -164,6 +180,10 @@ require([
                         var update_info = function(arrivals){
                             var arrival_entries = [];
                             var now = new Date();
+                            var make_alarm = false;
+                            // Check the number in the box.
+                            var minutes = parseInt($('#minutes').val());
+
                             $.each(arrivals, function(vehicle_id, vehicle){
                                 // Sort arrival times.
                                 vehicle.sort(function(a1, a2){
@@ -175,6 +195,8 @@ require([
                                     if(vehicle[0]['is_from'] && (vehicle.length == 1 || vehicle[1]['is_to'])){
                                         // from_stop -> to_stop or from_stop -> null.
                                         var route = route_infos[vehicle[0]['route_id']];
+                                        var from_diff = timediff(vehicle[0]['arrival_at'], now);
+                                        var to_diff = timediff(vehicle.length > 1 ? vehicle[1]['arrival_at'] : null, now);
                                         var arrival = {
                                             route_short_name: route['short_name'],
                                             route_long_name: route['long_name'],
@@ -183,8 +205,15 @@ require([
                                             vehicle_id: vehicle_id,
                                             from_stamp: vehicle[0]['arrival_at'],
                                             to_stamp: vehicle.length > 1 ? vehicle[1]['arrival_at'] : null,
-                                            from_arrival: format_timediff(vehicle[0]['arrival_at'], now),
-                                            to_arrival: format_timediff(vehicle.length > 1 ? vehicle[1]['arrival_at'] : null, now),
+                                            from_arrival: format_timediff(from_diff),
+                                            to_arrival: format_timediff(to_diff),
+                                        }
+                                        if(from_diff <= minutes && from_diff >= minutes - 1){
+                                            make_alarm = true;
+                                            arrival['alarm'] = true;
+                                        }
+                                        else{
+                                            arrival['alarm'] = false;
                                         }
                                         arrival_entries.push(arrival);
                                     }
@@ -201,6 +230,10 @@ require([
                                 $('#main-container').append(render.arrival(arrival));
                             });
                             $("#waiting").hide();
+
+                            if(make_alarm){
+                                alarm.play();
+                            }
                         };
 
                         var get_update = update($, [agency_id], common_routes, [from_stop_id, to_stop_id], update_info);
