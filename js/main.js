@@ -2,10 +2,11 @@ require([
         "order!jquery",
         "order!jquery.transloc",
         "order!jquery.ba-bbq.min",
+        "order!jquery.ba-throttle-debounce.min",
         "order!bootstrap",
         "render",
         "update",
-], function($, _, _, _, render, update){
+], function($, _, _, _, _, render, update){
     var params = $.deparam.querystring();
 
     var add_querystring = function(query){
@@ -48,10 +49,25 @@ require([
         $("#title").html(title);
     }
 
+    var set_search = function(){
+        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
+        $("#search").keyup($.debounce(300, function(event){
+            var search_str = $("#search").val().toLowerCase();
+            $("#main-list .searchable").each(function(i){
+                if($(this).data('search').toLowerCase().indexOf(search_str) != -1){
+                    $(this).show();
+                }
+                else{
+                    $(this).hide();
+                }
+            });
+        }));
+    }
+
     if(!params['agency_id']){
         // Show select agency screen.
         set_title("Choose Agency");
-        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
+        set_search();
 
         $.transloc('agencies', {
             success: function(agencies){
@@ -73,7 +89,7 @@ require([
     else if(!params['from_stop']){
         // Show select from stop screen.
         set_title("Pick your Origin");
-        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
+        set_search();
 
         var agency_id = params['agency_id'];
         $.transloc('stops', {
@@ -100,7 +116,7 @@ require([
     else if(!params['to_stop']){
         // Show select to stop screen.
         set_title("Pick your Destination");
-        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
+        set_search();
 
         var agency_id = params['agency_id'];
         var from_stop_id = params['from_stop'];
