@@ -44,9 +44,14 @@ require([
         }
     }
 
+    var set_title = function(title){
+        $("#title").html(title);
+    }
+
     if(!params['agency_id']){
         // Show select agency screen.
-        $("#title").append("Choose Agency");
+        set_title("Choose Agency");
+        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
 
         $.transloc('agencies', {
             success: function(agencies){
@@ -67,7 +72,8 @@ require([
     }
     else if(!params['from_stop']){
         // Show select from stop screen.
-        $("#title").append("Choose A From Stop");
+        set_title("Pick your Origin");
+        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
 
         var agency_id = params['agency_id'];
         $.transloc('stops', {
@@ -93,7 +99,8 @@ require([
     }
     else if(!params['to_stop']){
         // Show select to stop screen.
-        $("#title").append("Choose A To Stop");
+        set_title("Pick your Destination");
+        $("#input-bar").append('Search: <input id="search" type="text" class="span2"/>');
 
         var agency_id = params['agency_id'];
         var from_stop_id = params['from_stop'];
@@ -134,7 +141,7 @@ require([
     }
     else{
         // Show the actual alarm screen.
-        $("#title").append("You Can Take");
+        set_title("You Can Take");
         $("#input-bar").append('Alert me when a bus is <input type="number" id="minutes" class="span1" min="1" max="20" value="5"/> mins away.')
 
         var agency_id = params['agency_id'];
